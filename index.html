@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Five Hole — Daily Hockey Trivia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ice:#EEF4F8;
+    --ice-2:#E1EAF1;
+    --rink:#0B1C36;
+    --rink-2:#102447;
+    --red:#C8232C;
+    --red-dark:#8E151C;
+    --gold:#F2B807;
+    --slate:#52647C;
+    --slate-light:#8C9BB0;
+    --line-white:#FFFFFF;
+    --good:#1E9E6B;
+    --shadow: 0 12px 30px rgba(11,28,54,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,0.06), transparent 60%),
+      var(--rink);
+    color:var(--ice);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 80px;
+  }
+  .wrap{ width:100%; max-width:640px; }
+
+  /* ---- Header / scoreboard ---- */
+  header.top{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .wordmark{
+    font-family:'Teko',sans-serif;
+    font-weight:700;
+    font-size:54px;
+    line-height:0.9;
+    letter-spacing:0.5px;
+    color:var(--line-white);
+    text-shadow: 0 2px 0 var(--red);
+  }
+  .wordmark span{ color:var(--gold); }
+  .tagline{
+    font-size:13px;
+    color:var(--slate-light);
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    margin-top:4px;
+  }
+  .date-pill{
+    display:inline-block;
+    margin-top:14px;
+    padding:5px 14px;
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:999px;
+    font-size:12px;
+    letter-spacing:0.6px;
+    color:var(--slate-light);
+  }
+
+  /* ---- Scoreboard digit readout ---- */
+  .scoreboard{
+    background:var(--rink-2);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+  .sb-block{ text-align:center; flex:1; }
+  .sb-label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--slate-light);
+    margin-bottom:4px;
+  }
+  .sb-value{
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:28px;
+    color:var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .sb-divider{ width:1px; height:36px; background:rgba(255,255,255,0.1); }
+
+  /* ---- Point ladder ---- */
+  .ladder{
+    display:flex;
+    gap:6px;
+    margin-bottom:24px;
+  }
+  .rung{
+    flex:1;
+    text-align:center;
+    padding:8px 4px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.06);
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    color:var(--slate-light);
+    position:relative;
+  }
+  .rung .pts{ display:block; font-weight:700; font-size:14px; }
+  .rung.done{ background:rgba(30,158,107,0.15); border-color:rgba(30,158,107,0.4); color:#7FD8AE; }
+  .rung.wrong{ background:rgba(200,35,44,0.15); border-color:rgba(200,35,44,0.4); color:#F2A1A5; }
+  .rung.active{ background:rgba(242,184,7,0.15); border-color:var(--gold); color:var(--gold); }
+
+  /* ---- Card ---- */
+  .card{
+    background:var(--ice);
+    color:var(--rink);
+    border-radius:16px;
+    padding:28px 26px 24px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:5px;
+    background:linear-gradient(90deg, var(--red), var(--gold));
+  }
+  .q-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .q-number{
+    font-family:'Teko',sans-serif;
+    font-size:22px;
+    font-weight:600;
+    color:var(--slate);
+    letter-spacing:0.5px;
+  }
+  .q-points{
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:14px;
+    background:var(--rink);
+    color:var(--gold);
+    padding:5px 12px;
+    border-radius:999px;
+  }
+  .q-text{
+    font-size:21px;
+    font-weight:600;
+    line-height:1.35;
+    margin:0 0 22px;
+  }
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .choice{
+    text-align:left;
+    width:100%;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--ice-2);
+    background:#fff;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    color:var(--rink);
+    cursor:pointer;
+    transition: border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .choice:hover:not(:disabled){ border-color:var(--slate); transform: translateY(-1px); }
+  .choice:disabled{ cursor:default; }
+  .choice.correct{ background:rgba(30,158,107,0.12); border-color:var(--good); color:#0E6B45; }
+  .choice.incorrect{ background:rgba(200,35,44,0.1); border-color:var(--red); color:var(--red-dark); }
+  .choice.reveal{ opacity:0.55; }
+
+  .feedback{
+    margin-top:16px;
+    font-size:14px;
+    line-height:1.5;
+    color:var(--slate);
+    padding-top:14px;
+    border-top:1px dashed var(--ice-2);
+  }
+  .feedback b{ color:var(--rink); }
+
+  .next-btn{
+    margin-top:18px;
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:10px;
+    background:var(--rink);
+    color:var(--ice);
+    font-family:'Teko',sans-serif;
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    cursor:pointer;
+  }
+  .next-btn:hover{ background:var(--rink-2); }
+
+  /* ---- Results ---- */
+  .result-card{
+    background:var(--ice);
+    color:var(--rink);
+    border-radius:16px;
+    padding:30px 26px;
+    box-shadow:var(--shadow);
+    text-align:center;
+  }
+  .result-score{
+    font-family:'Teko',sans-serif;
+    font-size:64px;
+    font-weight:700;
+    color:var(--rink);
+    line-height:1;
+  }
+  .result-score span{ color:var(--red); }
+  .result-sub{
+    font-size:13px;
+    color:var(--slate);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-top:4px;
+  }
+  .breakdown{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin:22px 0;
+  }
+  .pip{
+    width:38px; height:38px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+  }
+  .pip.hit{ background:rgba(30,158,107,0.15); color:var(--good); border:1.5px solid var(--good); }
+  .pip.miss{ background:rgba(200,35,44,0.1); color:var(--red); border:1.5px solid var(--red); }
+
+  .name-row{
+    display:flex;
+    gap:8px;
+    margin:18px 0 6px;
+  }
+  .name-row input{
+    flex:1;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--ice-2);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+  }
+  .name-row button{
+    padding:12px 18px;
+    border:none;
+    border-radius:10px;
+    background:var(--red);
+    color:#fff;
+    font-family:'Teko',sans-serif;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .name-row button:hover{ background:var(--red-dark); }
+  .name-row button:disabled{ background:var(--slate-light); cursor:default; }
+
+  .submitted-note{ font-size:13px; color:var(--good); margin-top:10px; }
+
+  .leaderboard{
+    margin-top:26px;
+    text-align:left;
+  }
+  .lb-title{
+    font-family:'Teko',sans-serif;
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .lb-title small{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--slate);
+    font-weight:500;
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .lb-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border-radius:8px;
+    font-size:14px;
+  }
+  .lb-row:nth-child(odd){ background:rgba(82,100,124,0.06); }
+  .lb-row.you{ background:rgba(242,184,7,0.18); font-weight:700; }
+  .lb-rank{
+    font-family:'Space Mono',monospace;
+    width:26px;
+    color:var(--slate);
+    flex-shrink:0;
+  }
+  .lb-name{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-score{ font-family:'Space Mono',monospace; font-weight:700; }
+
+  .stat-row{
+    display:flex;
+    justify-content:center;
+    gap:24px;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--slate);
+  }
+  .stat-row b{ color:var(--rink); font-size:16px; display:block; }
+
+  .loading{ text-align:center; color:var(--slate-light); padding:40px 0; font-size:14px; }
+
+  footer{
+    margin-top:30px;
+    text-align:center;
+    font-size:12px;
+    color:var(--slate-light);
+    letter-spacing:0.4px;
+  }
+
+  @media (max-width:420px){
+    .wordmark{ font-size:42px; }
+    .q-text{ font-size:18px; }
+    .result-score{ font-size:50px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="wordmark">FIVE<span>HOLE</span></div>
+    <div class="tagline">Daily hockey trivia · five shots, rising stakes</div>
+    <div class="date-pill" id="datePill">—</div>
+  </header>
+
+  <div id="app">
+    <div class="loading">Lacing up…</div>
+  </div>
+
+  <footer>One puzzle a day. Same five questions for everyone. Come back tomorrow for a new game.</footer>
+</div>
+
+<script>
+(function(){
+
+  // ---------------- Question bank ----------------
+  // 7 rotating daily sets, 5 questions each, easy -> hard, worth 100..500
+  // ---------------- Question bank ----------------
+  // 7 rotating daily sets, 5 questions each, all genuinely hard hockey trivia, worth 100..500
+  const QUESTION_SETS = [
+    [
+      {q:"Which player recorded the fastest hat trick in NHL history, scoring three goals in 21 seconds?", choices:["Mario Lemieux","Bill Mosienko","Wayne Gretzky","Jean Beliveau"], answer:1, points:100, fact:"Bill Mosienko of the Chicago Black Hawks scored his three goals in 21 seconds against the New York Rangers on March 23, 1952, a record still unbroken."},
+      {q:"Who was the last defenseman before Bobby Orr's era to lead the NHL in scoring outright, and in what decade did it happen?", choices:["Eddie Shore, 1930s","Doug Harvey, 1950s","Red Kelly, 1940s","No defenseman did this before Orr"], answer:3, points:200, fact:"Bobby Orr was the first defenseman ever to win the Art Ross Trophy as scoring champion, doing so in 1970 and 1975."},
+      {q:"Which goaltender invented the modern butterfly style of goaltending that dominates the position today?", choices:["Jacques Plante","Glenn Hall","Tony Esposito","Patrick Roy popularized it but credit for inventing it generally goes to Glenn Hall"], answer:3, points:300, fact:"Glenn Hall is widely credited with pioneering the butterfly technique in the 1950s, which Patrick Roy and his goalie coach Francois Allaire later refined and popularized."},
+      {q:"In the 1980 'Miracle on Ice,' what was the final score of the United States' upset win over the Soviet Union?", choices:["4-3","5-4","3-2","6-1"], answer:0, points:400, fact:"The United States defeated the heavily favored Soviet Union 4-3 in the medal round at the 1980 Lake Placid Olympics."},
+      {q:"Which player holds the NHL record for most points in a single playoff game, with eight points in one contest?", choices:["Wayne Gretzky","Mario Lemieux","Patrik Sundstrom","Tom Lysiak"], answer:2, points:500, fact:"Patrik Sundstrom of the New Jersey Devils recorded eight points, three goals and five assists, against the Washington Capitals in 1988."}
+    ],
+    [
+      {q:"What is the term for a goaltender allowing a goal on the very first shot they face in a game?", choices:["A blowout","A cold start","No widely used specific term exists for this","A flash goal"], answer:2, points:100, fact:"While commentators may note it happened, there is no standard official statistical term for a goal on the first shot faced."},
+      {q:"Which NHL team set the modern record for most points in a single regular season with 132 points in 1995-96?", choices:["Detroit Red Wings","Montreal Canadiens","Boston Bruins","Pittsburgh Penguins"], answer:0, points:200, fact:"The 1995-96 Detroit Red Wings finished 62-13-7 for 132 points, the most in a single season in the post-1967 expansion era."},
+      {q:"Who scored the 'Easter Epic' four-overtime winner for the New York Islanders against the Washington Capitals in 1987?", choices:["Mike Bossy","Pat LaFontaine","Bryan Trottier","Denis Potvin"], answer:1, points:300, fact:"Pat LaFontaine scored in the fourth overtime, ending what remains one of the longest games in NHL history at nearly 7 periods of action."},
+      {q:"Which player won the Conn Smythe Trophy in 1968 while playing for the St. Louis Blues, a team that lost the Stanley Cup Final that year?", choices:["Glenn Hall","Red Berenson","Al Arbour","Barclay Plager"], answer:0, points:400, fact:"Goaltender Glenn Hall won playoff MVP despite the expansion Blues being swept by Montreal in the Final."},
+      {q:"What was unusual about the 1919 Stanley Cup Final between the Montreal Canadiens and Seattle Metropolitans?", choices:["It went to a shootout","It was cancelled due to the influenza pandemic with no champion declared","It was played indoors for the first time","It ended in a tie by rule"], answer:1, points:500, fact:"The 1919 Final was called off after five games due to the Spanish flu outbreak, which also claimed the life of Canadiens player Joe Hall; no champion was awarded."}
+    ],
+    [
+      {q:"What does the term 'Gordie Howe hat trick' refer to?", choices:["Three goals in three different periods","A goal, an assist, and a fight in the same game","Scoring on three consecutive shifts","Three game-winning goals in one week"], answer:1, points:100, fact:"Named for Gordie Howe's combination of skill and toughness, this informal feat means a goal, an assist, and a fighting major in one game."},
+      {q:"Which European-trained goaltender was the first to win the Vezina Trophy?", choices:["Dominik Hasek","Pekka Rinne","Henrik Lundqvist","Tomas Vokoun"], answer:0, points:200, fact:"Dominik Hasek, trained in Czechoslovakia, won the Vezina Trophy six times in the 1990s and 2000s, the first European-developed goalie to do so."},
+      {q:"In the original 1917 founding of the NHL, how many teams played in the league's first season?", choices:["Four","Six","Eight","Three"], answer:0, points:300, fact:"The NHL began play in the 1917-18 season with four teams, though one franchise folded partway through due to a rink fire."},
+      {q:"Which player's wrist shot in Game 7 of the 2010 Olympic gold medal game, in overtime, is often called the 'Golden Goal'?", choices:["Jonathan Toews","Patrice Bergeron","Sidney Crosby","Ryan Getzlaf"], answer:2, points:400, fact:"Sidney Crosby scored in overtime to give host nation Canada a 3-2 win over the United States at the 2010 Vancouver Olympics."},
+      {q:"Who was the last player to win the Hart Trophy as a member of a team that missed the playoffs that same season?", choices:["This has never happened in NHL history","Connor McDavid, 2021","Mario Lemieux, 1988","Wayne Gretzky, 1989"], answer:0, points:500, fact:"No reigning Hart Trophy winner has gone on to miss the playoffs that same season; even McDavid's COVID-shortened 2020-21 Oilers made the playoffs in their realigned division."},
+    ],
+    [
+      {q:"Which goaltender is the only one in NHL history to score a goal by shooting the puck the length of the ice into an empty net during the regular season, doing it more than once?", choices:["Martin Brodeur","Ron Hextall","Both Brodeur and Hextall did this","Chris Osgood"], answer:2, points:100, fact:"Ron Hextall and Martin Brodeur are both credited with scoring goaltender goals in the regular season; Hextall also did it in the playoffs."},
+      {q:"What was the attendance and venue record set by the 2014 NHL Winter Classic alumni or outdoor games era, specifically the 2010 game at Michigan Stadium known as the 'Big Chill at the Big House'?", choices:["About 70,000","About 104,000","About 50,000","About 113,000"], answer:3, points:200, fact:"The 2010 outdoor game between Michigan and Michigan State drew an announced crowd of 113,411, the largest in hockey history, at Michigan Stadium."},
+      {q:"Which NHL franchise relocated from Atlanta to Calgary in 1980, becoming the Calgary Flames?", choices:["Atlanta Flames","Atlanta Thrashers","Atlanta Knights","Atlanta Hawks (NBA, not applicable)"], answer:0, points:300, fact:"The original Atlanta Flames moved to Calgary in 1980 and kept the Flames name; a later Atlanta franchise, the Thrashers, moved to Winnipeg in 2011."},
+      {q:"Who was the first black player to play in the NHL, debuting with the Boston Bruins in 1958?", choices:["Willie O'Ree","Grant Fuhr","Jarome Iginla","Mike Marson"], answer:0, points:400, fact:"Willie O'Ree broke the NHL's color barrier playing for the Boston Bruins on January 18, 1958."},
+      {q:"In what year did the 'Miracle on Manchester' comeback occur, when the Los Angeles Kings overcame a five-goal third-period deficit against the Edmonton Oilers in the playoffs?", choices:["1982","1986","1979","1991"], answer:0, points:500, fact:"On April 10, 1982, the Kings erased a 5-0 deficit to win 6-5 in overtime against the heavily favored Oilers, a game still referenced as one of the greatest comebacks in playoff history."}
+    ],
+    [
+      {q:"What is a 'Michigan' in modern hockey terminology, popularized by Mike Legg and later Trevor Zegras?", choices:["A type of defensive zone trap","A lacrosse-style move scooping the puck and tucking it into the net from behind the goal line","A two-line pass penalty","A goaltender stick save technique"], answer:1, points:100, fact:"Mike Legg first performed the move at the University of Michigan in 1996, scooping the puck on his blade and tucking it past the goaltender."},
+      {q:"Which NHL team has gone the longest in modern history without winning a Stanley Cup, dating back to the league's Original Six era expansion in 1967 or earlier without a title since the era began?", choices:["Toronto Maple Leafs, since 1967","Vancouver Canucks, never won","Buffalo Sabres, never won","St. Louis Blues, until 2019"], answer:0, points:200, fact:"The Toronto Maple Leafs last won the Stanley Cup in 1967 and have not won since, the longest active drought among Original Six teams."},
+      {q:"Which player was traded by the Edmonton Oilers to the Los Angeles Kings in 1988 in a deal that remains one of the most significant trades in sports history?", choices:["Mark Messier","Wayne Gretzky","Jari Kurri","Paul Coffey"], answer:1, points:300, fact:"Wayne Gretzky was traded to the Los Angeles Kings on August 9, 1988, an event that dramatically boosted hockey's popularity in the United States."},
+      {q:"Who scored the championship-clinching goal for the United States at the inaugural 1996 World Cup of Hockey?", choices:["Brett Hull","Brian Leetch","John LeClair","Mike Richter"], answer:2, points:400, fact:"John LeClair scored the series-clinching goal in overtime of Game 3 as the United States beat Canada to win the 1996 World Cup of Hockey."},
+      {q:"Which icing-related rule, introduced in 2005, allows a shorthanded team to ice the puck without being whistled for a stoppage?", choices:["The trapezoid rule","Hybrid icing","The shorthanded icing exemption","Tag-up offside"], answer:2, points:500, fact:"The shorthanded icing exemption lets a penalty-killing team clear the puck down the ice without an icing call, a long-standing rule rather than a 2005 addition, though it's frequently misattributed to that lockout's rule changes."},
+    ],
+    [
+      {q:"Which conference championship trophy or trophies carry a long-standing superstition that touching them before winning the Cup invites bad luck?", choices:["Only the Wales Trophy","Only the Campbell Bowl","Both the Wales and Campbell trophies","Neither — this is a myth with no real tradition"], answer:2, points:100, fact:"Both the Prince of Wales and Clarence Campbell conference championship trophies are subject to a long-standing superstition that touching them invites bad luck in the Final."},
+      {q:"Which goaltender holds the modern NHL record for most shutouts in a single regular season, with 15 in 1928-29?", choices:["George Hainsworth","Tony Esposito","Terry Sawchuk","Martin Brodeur"], answer:0, points:200, fact:"George Hainsworth recorded 22 shutouts in 44 games during the low-scoring 1928-29 season for the Montreal Canadiens, a total unmatched since."},
+      {q:"What was the original purpose of the 'trapezoid' painted behind NHL goal lines, introduced in 2005?", choices:["To mark where goaltenders may legally play the puck","To indicate icing review zones","To mark a faceoff exclusion area","To define empty-net goal boundaries"], answer:0, points:300, fact:"The trapezoid restricts where goaltenders can handle the puck behind the net, introduced to limit puck-handling goalies like Martin Brodeur."},
+      {q:"Alexander Ovechkin's spectacular sliding backhand goal, one of the most replayed highlights of his rookie year, came during which season?", choices:["2004-05","2005-06","2006-07","2007-08"], answer:1, points:400, fact:"Ovechkin scored his now-famous sliding, on-his-back backhand goal during his rookie 2005-06 season, the first year back after the lockout wiped out 2004-05."},,
+      {q:"In which decade did the NHL first introduce the center red line, enabling the two-line pass rule it represented until that rule was eliminated in 2005?", choices:["1910s","1920s","1940s","1960s"], answer:2, points:500, fact:"The center red line was introduced in the 1943-44 season alongside other rule changes meant to speed up the game and reduce defensive holding tactics."}
+    ],
+    [
+      {q:"What is the term for a team intentionally pulling its goaltender for an extra attacker, typically late in a game while trailing?", choices:["Power play","Empty net push","Pulling the goalie","Sudden death formation"], answer:2, points:100, fact:"Pulling the goalie swaps the goaltender for a sixth attacker, gambling offense for the risk of an empty-net goal against."},
+      {q:"Which player is the only one to score 50 goals in 39 games, the fastest pace to 50 in NHL history?", choices:["Wayne Gretzky","Mario Lemieux","Brett Hull","Mike Bossy"], answer:0, points:200, fact:"Wayne Gretzky reached 50 goals in just 39 games during the 1981-82 season, a record that still stands."},
+      {q:"What event is commonly known as the 'Punch-up in Piestany,' a notorious 1987 bench-clearing brawl?", choices:["A Stanley Cup Final fight","A brawl between Canada and the Soviet Union at the World Junior Championship that led to both teams' disqualification","An Olympic semifinal incident","A fight that ended the original Summit Series"], answer:1, points:300, fact:"The 1987 World Junior Championship game between Canada and the USSR in Piestany, Czechoslovakia, descended into a massive bench-clearing brawl, resulting in both teams being expelled from the tournament."},
+      {q:"Which goaltender is the only one to win the Stanley Cup, the Olympic gold medal, and the World Championship gold all in the same calendar year, doing so in 2002?", choices:["Martin Brodeur","Patrick Roy","Nikolai Khabibulin","Marc-Andre Fleury"], answer:0, points:400, fact:"Martin Brodeur won the Stanley Cup with New Jersey and Olympic gold with Canada in 2002, completing a rare championship sweep that year."},
+      {q:"What was the final combined score that made the 1981 Canada Cup semifinal between Canada and the Soviet Union, a 8-1 Soviet win, especially notable as a low point for Team Canada that decade?", choices:["8-1 Soviet Union","6-0 Soviet Union","7-3 Soviet Union","5-2 Soviet Union"], answer:0, points:500, fact:"The Soviet Union routed Canada 8-1 in the 1981 Canada Cup final, one of the most lopsided defeats in Canadian best-on-best hockey history."}
+    ]
+  ];
+
+
+  // ---------------- Date helpers ----------------
+  function todayKey(){
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function dayOfYear(d){
+    const start = new Date(d.getFullYear(),0,0);
+    const diff = d - start;
+    return Math.floor(diff / 86400000);
+  }
+  const dKey = todayKey();
+  const todaysQuestions = QUESTION_SETS[dayOfYear(new Date()) % QUESTION_SETS.length];
+
+  document.getElementById('datePill').textContent =
+    new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+
+  // ---------------- State ----------------
+  let state = {
+    qIndex: 0,
+    score: 0,
+    answers: [], // {correct:bool, points:number}
+    finished: false,
+    name: "",
+    submitted: false
+  };
+
+  const app = document.getElementById('app');
+
+  async function loadPersonalState(){
+    try{
+      const r = await window.storage.get('fivehole:'+dKey, false);
+      if(r && r.value){
+        const saved = JSON.parse(r.value);
+        state = Object.assign(state, saved);
+      }
+    }catch(e){ /* no saved state yet */ }
+  }
+
+  async function savePersonalState(){
+    try{
+      await window.storage.set('fivehole:'+dKey, JSON.stringify(state), false);
+    }catch(e){ console.error('save failed', e); }
+  }
+
+  async function getLeaderboard(){
+    try{
+      const list = await window.storage.list('lb:'+dKey+':', true);
+      if(!list || !list.keys || !list.keys.length) return [];
+      const entries = [];
+      for(const k of list.keys){
+        try{
+          const r = await window.storage.get(k, true);
+          if(r && r.value) entries.push(JSON.parse(r.value));
+        }catch(e){}
+      }
+      entries.sort((a,b)=> b.score - a.score || a.time - b.time);
+      return entries;
+    }catch(e){ return []; }
+  }
+
+  async function submitScore(name){
+    const id = name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24) + '-' + Math.random().toString(36).slice(2,7);
+    const entry = {name: name.slice(0,24), score: state.score, time: Date.now()};
+    try{
+      await window.storage.set('lb:'+dKey+':'+id, JSON.stringify(entry), true);
+      return true;
+    }catch(e){ return false; }
+  }
+
+  // ---------------- Render: question screen ----------------
+  function renderLadder(){
+    let html = '<div class="ladder">';
+    todaysQuestions.forEach((q,i)=>{
+      let cls = 'rung';
+      if(state.answers[i]) cls += state.answers[i].correct ? ' done' : ' wrong';
+      else if(i === state.qIndex && !state.finished) cls += ' active';
+      html += `<div class="${cls}"><span class="pts">${q.points}</span>Q${i+1}</div>`;
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderScoreboard(){
+    const answered = state.answers.length;
+    const correct = state.answers.filter(a=>a.correct).length;
+    return `<div class="scoreboard">
+      <div class="sb-block"><div class="sb-label">Score</div><div class="sb-value">${state.score}</div></div>
+      <div class="sb-divider"></div>
+      <div class="sb-block"><div class="sb-label">Shot</div><div class="sb-value">${answered}/5</div></div>
+      <div class="sb-divider"></div>
+      <div class="sb-block"><div class="sb-label">Hits</div><div class="sb-value">${correct}</div></div>
+    </div>`;
+  }
+
+  function renderQuestion(){
+    const i = state.qIndex;
+    const q = todaysQuestions[i];
+    const already = state.answers[i];
+
+    let choicesHtml = '';
+    q.choices.forEach((c, ci)=>{
+      let cls = 'choice';
+      let disabled = '';
+      if(already){
+        disabled = 'disabled';
+        if(ci === q.answer) cls += ' correct';
+        else if(ci === already.picked) cls += ' incorrect';
+        else cls += ' reveal';
+      }
+      choicesHtml += `<button class="${cls}" ${disabled} data-ci="${ci}">${c}</button>`;
+    });
+
+    let feedback = '';
+    let nextBtn = '';
+    if(already){
+      feedback = `<div class="feedback"><b>${already.correct ? 'Onside! ' : 'Offside. '}</b>${q.fact}</div>`;
+      const isLast = i === todaysQuestions.length - 1;
+      nextBtn = `<button class="next-btn" id="nextBtn">${isLast ? 'See final score' : 'Next shot →'}</button>`;
+    }
+
+    app.innerHTML = `
+      ${renderScoreboard()}
+      ${renderLadder()}
+      <div class="card">
+        <div class="q-meta">
+          <div class="q-number">Shot ${i+1} of 5</div>
+          <div class="q-points">${q.points} PTS</div>
+        </div>
+        <p class="q-text">${q.q}</p>
+        <div class="choices">${choicesHtml}</div>
+        ${feedback}
+        ${nextBtn}
+      </div>
+    `;
+
+    if(!already){
+      app.querySelectorAll('.choice').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const ci = parseInt(btn.dataset.ci,10);
+          const correct = ci === q.answer;
+          state.answers[i] = {picked: ci, correct: correct};
+          if(correct) state.score += q.points;
+          await savePersonalState();
+          renderQuestion();
+        });
+      });
+    } else {
+      const nb = document.getElementById('nextBtn');
+      if(nb){
+        nb.addEventListener('click', async ()=>{
+          if(i === todaysQuestions.length - 1){
+            state.finished = true;
+          } else {
+            state.qIndex += 1;
+          }
+          await savePersonalState();
+          render();
+        });
+      }
+    }
+  }
+
+  // ---------------- Render: results screen ----------------
+  async function renderResults(){
+    app.innerHTML = `<div class="loading">Tallying the shootout…</div>`;
+    const board = await getLeaderboard();
+    const rank = board.findIndex(e => state.submitted && e.name === state.name && e.score === state.score) ;
+
+    let pips = '';
+    state.answers.forEach((a,i)=>{
+      pips += `<div class="pip ${a.correct ? 'hit':'miss'}">${a.correct ? '✓' : '✗'}</div>`;
+    });
+
+    const correctCount = state.answers.filter(a=>a.correct).length;
+
+    let nameSection = '';
+    if(!state.submitted){
+      nameSection = `
+        <div class="name-row">
+          <input type="text" id="nameInput" placeholder="Enter your name for the leaderboard" maxlength="24" value="${state.name || ''}">
+          <button id="submitBtn">Post score</button>
+        </div>
+      `;
+    } else {
+      nameSection = `<div class="submitted-note">Posted to today's leaderboard as "${state.name}".</div>`;
+    }
+
+    let lbRows = '';
+    if(board.length){
+      board.slice(0,10).forEach((e,idx)=>{
+        const you = state.submitted && e.name === state.name && e.score === state.score;
+        lbRows += `<div class="lb-row ${you ? 'you':''}">
+          <div class="lb-rank">#${idx+1}</div>
+          <div class="lb-name">${escapeHtml(e.name)}</div>
+          <div class="lb-score">${e.score}</div>
+        </div>`;
+      });
+    } else {
+      lbRows = `<div class="lb-row" style="color:var(--slate)">No scores posted yet today — be the first.</div>`;
+    }
+
+    const totalPlayers = board.length;
+
+    app.innerHTML = `
+      <div class="result-card">
+        <div class="result-score">${state.score}<span>/1500</span></div>
+        <div class="result-sub">${correctCount} of 5 correct</div>
+        <div class="breakdown">${pips}</div>
+        ${nameSection}
+        <div class="leaderboard">
+          <div class="lb-title">Today's leaderboard <small>${totalPlayers} player${totalPlayers===1?'':'s'} so far</small></div>
+          ${lbRows}
+        </div>
+      </div>
+    `;
+
+    if(!state.submitted){
+      const submitBtn = document.getElementById('submitBtn');
+      const nameInput = document.getElementById('nameInput');
+      submitBtn.addEventListener('click', async ()=>{
+        const name = (nameInput.value || '').trim();
+        if(!name){ nameInput.focus(); return; }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Posting…';
+        state.name = name;
+        const ok = await submitScore(name);
+        if(ok){
+          state.submitted = true;
+          await savePersonalState();
+          renderResults();
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Post score';
+        }
+      });
+      nameInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') submitBtn.click(); });
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function render(){
+    if(state.finished){
+      renderResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  // ---------------- Init ----------------
+  (async function init(){
+    await loadPersonalState();
+    render();
+  })();
+
+})();
+</script>
+</body>
+</html>
